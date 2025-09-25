@@ -36,3 +36,4 @@ Models/
 
 # Local configuration files (rename and commit as .example if needed)
 agent-config.json
+.deps/FountainKit/
