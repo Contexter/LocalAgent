@@ -1,0 +1,13 @@
+module LlamaCppC [system] {
+  header "llama.h"
+  link "llama"
+  export *
+}
+
+# Notes
+# - Build llama.cpp as a static library (libllama.a) with Apple toolchain.
+# - Place public headers (e.g., llama.h) alongside this modulemap.
+# - Adjust the link line if your library name differs.
+# - In Package.swift, either add a system library target for LlamaCppC or
+#   provide a Clang module search path via SwiftPM flags.
+

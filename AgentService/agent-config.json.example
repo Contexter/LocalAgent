@@ -1,0 +1,7 @@
+{
+  "backend": "mock",
+  "modelPath": "Models/gorilla-openfunctions-v2-q4_0.gguf",
+  "host": "127.0.0.1",
+  "port": 8080
+}
+
