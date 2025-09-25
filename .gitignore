@@ -1,0 +1,38 @@
+# macOS system files
+.DS_Store
+
+# Xcode build artifacts and user data
+build/
+DerivedData/
+*.xcodeproj
+*.xcworkspace
+*.xcuserstate
+*.xcuserdata/
+
+# Swift Package Manager build output
+/.build/
+/.swiftpm/
+
+# Carthage build directory
+Carthage/Build/
+
+# CocoaPods artifacts
+Pods/
+Podfile.lock
+
+# Node modules (if using JS/TS tooling)
+node_modules/
+
+# Model weights and large data files
+Models/
+
+# IDE settings
+.idea/
+.vscode/
+
+# Temporary files
+*~
+*.swp
+
+# Local configuration files (rename and commit as .example if needed)
+agent-config.json
