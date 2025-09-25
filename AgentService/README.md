@@ -38,3 +38,31 @@ Skeletons can be added behind conditional imports:
 
 - Llama.cpp: `#if canImport(LlamaCppC)` provide `LlamaCppBackend`.
 - Core ML: `#if canImport(CoreML)` provide `CoreMLBackend`.
+
+### Llama.cpp via SwiftPM system library
+
+This package includes an optional system library target `LlamaCppC` to expose the
+llama.cpp C API (`llama.h`) to Swift.
+
+- Target: `Sources/LlamaCppC` with `module.modulemap` + `shim.h` that includes `<llama.h>`
+- Package.swift declares `.systemLibrary(name: "LlamaCppC", pkgConfig: "llama", providers: [.brew(["llama.cpp"])])`
+
+Enable it in two ways:
+
+1) Homebrew (recommended)
+   - `brew install llama.cpp`
+   - Ensure headers and lib are visible (brew usually handles this)
+   - Build as usual; `canImport(LlamaCppC)` becomes true and `LlamaCppBackend` will be used when `backend` is set to `llama`.
+
+2) Custom build
+   - Build `llama.cpp` as `libllama.a` and install `llama.h`
+   - Adjust search paths (e.g. via `PKG_CONFIG_PATH`) or place headers/libs in standard locations
+
+Note: AgentCore does not depend on `LlamaCppC` by default. This avoids link
+errors on machines without llama.cpp. The backend compiles conditionally.
+
+### Core ML scaffolding
+
+`CoreMLBackend` accepts a `Tokenizer` and `SamplerOptions` (see `Tokenization.swift`, `Sampling.swift`).
+Integrate your tokenizer and use the sampler with model logits. The current
+implementation returns a diagnostic until a real model is provided.

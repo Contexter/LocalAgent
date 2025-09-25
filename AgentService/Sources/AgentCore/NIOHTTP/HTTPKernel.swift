@@ -11,4 +11,3 @@ public struct HTTPKernel: @unchecked Sendable {
         try await router(request)
     }
 }
-

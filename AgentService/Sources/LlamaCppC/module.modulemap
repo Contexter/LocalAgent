@@ -1,0 +1,6 @@
+module LlamaCppC [system] {
+  header "shim.h"
+  link "llama"
+  export *
+}
+

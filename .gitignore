@@ -9,9 +9,9 @@ DerivedData/
 *.xcuserstate
 *.xcuserdata/
 
-# Swift Package Manager build output
-/.build/
-/.swiftpm/
+# Swift Package Manager build output (ignore in all subdirectories)
+.build/
+.swiftpm/
 
 # Carthage build directory
 Carthage/Build/

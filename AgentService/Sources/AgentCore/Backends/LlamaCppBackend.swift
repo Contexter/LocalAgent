@@ -3,15 +3,15 @@ import Foundation
 #if canImport(LlamaCppC)
 import LlamaCppC
 
-struct LlamaCppBackend: ModelBackend {
-    let modelPath: String?
+public struct LlamaCppBackend: ModelBackend {
+    public let modelPath: String?
 
-    init(modelPath: String?) throws {
+    public init(modelPath: String?) throws {
         self.modelPath = modelPath
         // TODO: initialize llama.cpp context with modelPath
     }
 
-    func generateResponse(for request: ChatRequest) async throws -> ChatResponse {
+    public func generateResponse(for request: ChatRequest) async throws -> ChatResponse {
         // TODO: run inference and produce function_call or text per schema
         let ts = Int(Date().timeIntervalSince1970)
         let id = "chatcmpl-llama-\(UUID().uuidString.prefix(8))"
@@ -23,4 +23,3 @@ struct LlamaCppBackend: ModelBackend {
     }
 }
 #endif
-

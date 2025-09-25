@@ -13,4 +13,3 @@ public struct HTTPRequest: Sendable {
         self.body = body
     }
 }
-

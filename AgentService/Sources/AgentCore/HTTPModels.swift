@@ -95,7 +95,7 @@ public enum FunctionCallOption: Codable, Equatable {
             case "none": self = .none
             default: self = .force(name: s)
             }
-        } else if let o = try? decoder.decode([String: String].self), let name = o[CodingKeys.name.rawValue] {
+        } else if let o = try? container.decode([String: String].self), let name = o[CodingKeys.name.rawValue] {
             self = .force(name: name)
         } else {
             self = .auto
@@ -156,4 +156,3 @@ public struct ChatResponse: Codable, Equatable {
     public let model: String?
     public let choices: [ChatChoice]
 }
-

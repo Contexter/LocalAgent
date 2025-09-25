@@ -1,11 +1,12 @@
 import Foundation
 
-protocol ModelBackend {
+public protocol ModelBackend {
     func generateResponse(for request: ChatRequest) async throws -> ChatResponse
 }
 
-struct MockBackend: ModelBackend {
-    func generateResponse(for request: ChatRequest) async throws -> ChatResponse {
+public struct MockBackend: ModelBackend {
+    public init() {}
+    public func generateResponse(for request: ChatRequest) async throws -> ChatResponse {
         let ts = Int(Date().timeIntervalSince1970)
         let id = "chatcmpl-local-\(UUID().uuidString.prefix(8))"
         let model = request.model ?? "local-mock-1"
@@ -73,4 +74,3 @@ struct MockBackend: ModelBackend {
         return "Echo: \(lastUser)"
     }
 }
-

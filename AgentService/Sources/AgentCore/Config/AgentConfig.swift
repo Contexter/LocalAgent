@@ -1,12 +1,12 @@
 import Foundation
 
-struct AgentConfig: Codable {
-    let backend: String
-    let modelPath: String?
-    let host: String?
-    let port: Int?
+public struct AgentConfig: Codable {
+    public let backend: String
+    public let modelPath: String?
+    public let host: String?
+    public let port: Int?
 
-    static func load(from path: String? = nil) throws -> AgentConfig {
+    public static func load(from path: String? = nil) throws -> AgentConfig {
         let fm = FileManager.default
         let envPath = ProcessInfo.processInfo.environment["AGENT_CONFIG"]
         let searchPaths = [path, envPath, "agent-config.json"].compactMap { $0 }
@@ -21,4 +21,3 @@ struct AgentConfig: Codable {
         return AgentConfig(backend: "mock", modelPath: nil, host: "127.0.0.1", port: 8080)
     }
 }
-

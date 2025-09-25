@@ -81,4 +81,3 @@ public final class NIOHTTPServer: @unchecked Sendable {
 
 extension NIOHTTPServer.HTTPHandler: @unchecked Sendable {}
 extension ChannelHandlerContext: @unchecked @retroactive Sendable {}
-

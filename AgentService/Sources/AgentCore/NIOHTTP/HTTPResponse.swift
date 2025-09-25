@@ -11,4 +11,3 @@ public struct HTTPResponse: Sendable {
         self.body = body
     }
 }
-
