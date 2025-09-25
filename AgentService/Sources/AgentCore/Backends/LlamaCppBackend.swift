@@ -1,7 +1,11 @@
 import Foundation
 
 #if canImport(LlamaCppC)
+#if canImport(LlamaCppC)
 import LlamaCppC
+#elseif canImport(LlamaCppCBinary)
+import LlamaCppCBinary
+#endif
 
 public final class LlamaCppBackend: ModelBackend {
     // MARK: - Configuration

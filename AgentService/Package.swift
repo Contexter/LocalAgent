@@ -26,6 +26,10 @@ let package = Package(
                 .apt(["llama"])
             ]
         ),
+        // Optional prebuilt binary target is not declared by default to avoid
+        // resolution errors when the artifact is missing. After running
+        // scripts/build-prebuilt-xcframework.sh, you can add:
+        // .binaryTarget(name: "LlamaCppCBinary", path: "Vendor/LlamaCppCBinary.xcframework"),
         .target(
             name: "AgentCore",
             dependencies: [
