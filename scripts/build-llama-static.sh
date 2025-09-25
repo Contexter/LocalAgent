@@ -9,7 +9,8 @@ LLAMA_DIR="$WORK_DIR/llama.cpp"
 HEADERS_DIR="$WORK_DIR/headers"
 LIB_DIR="$WORK_DIR/lib"
 
-PINNED_COMMIT="master" # Adjust to a known good commit for stability
+REF_DEFAULT="b6550"   # Default pinned llama.cpp tag/commit; override with LLAMA_CPP_REF
+PINNED_COMMIT="${LLAMA_CPP_REF:-$REF_DEFAULT}"
 
 mkdir -p "$WORK_DIR" "$HEADERS_DIR" "$LIB_DIR"
 
@@ -19,7 +20,12 @@ if [ ! -d "$LLAMA_DIR" ]; then
 fi
 pushd "$LLAMA_DIR" >/dev/null
 git fetch --all
-git checkout "$PINNED_COMMIT"
+if git checkout "$PINNED_COMMIT"; then
+  echo "Checked out llama.cpp at $PINNED_COMMIT"
+else
+  echo "WARN: Failed to checkout '$PINNED_COMMIT'. Falling back to 'master'." >&2
+  git checkout master
+fi
 
 echo "==> Building libllama.a (Metal enabled)"
 make clean || true

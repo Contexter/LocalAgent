@@ -62,4 +62,23 @@ final class AgentCoreTests: XCTestCase {
         XCTAssertEqual(chat.choices.first?.finish_reason, "stop")
         XCTAssertEqual(chat.choices.first?.message.content, "Echo: hello")
     }
+
+    func testSSEStreamMock() async throws {
+        let kernel = makeKernel(backend: MockBackend())
+        let body = ChatRequest(
+            model: nil,
+            messages: [ChatMessage(role: "user", content: "hello streaming friend")],
+            functions: nil,
+            function_call: nil
+        )
+        let data = try JSONEncoder().encode(body)
+        let req = HTTPRequest(method: "POST", path: "/chat/stream", headers: ["Content-Type":"application/json"], body: data)
+        let resp = try await kernel.handle(req)
+        XCTAssertEqual(resp.status, 200)
+        XCTAssertEqual(resp.headers["Content-Type"], "text/event-stream; charset=utf-8")
+        XCTAssertEqual(resp.headers["X-Chunked-SSE"], "1")
+        let s = String(data: resp.body, encoding: .utf8) ?? ""
+        XCTAssertTrue(s.contains("event: message"))
+        XCTAssertTrue(s.contains("event: done"))
+    }
 }

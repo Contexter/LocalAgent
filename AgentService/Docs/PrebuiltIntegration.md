@@ -6,7 +6,8 @@ prebuilt `.xcframework` as a SwiftPM binary target.
 ## Build the xcframework
 
 ```bash
-./scripts/build-prebuilt-xcframework.sh
+# Optionally pin to a llama.cpp tag/commit (default: b6550)
+LLAMA_CPP_REF=b6550 ./scripts/build-prebuilt-xcframework.sh
 ```
 
 This produces `Vendor/LlamaCppCBinary.xcframework` (static archive + headers).
@@ -44,3 +45,13 @@ import LlamaCppCBinary
 
 so it will compile against the prebuilt module without requiring Homebrew.
 
+## Static-linked binary build
+
+To build a self-contained AgentService with a statically linked llama library:
+
+```bash
+# Optionally pin to a llama.cpp tag/commit (default: b6550)
+LLAMA_CPP_REF=b6550 ./scripts/build-llama-static.sh
+```
+
+The resulting binary is placed in the SwiftPM release bin path; use `swift build -c release --package-path AgentService --show-bin-path` to locate it.

@@ -28,7 +28,7 @@ jobs:
       - name: Build AgentService (static llama)
         run: |
           chmod +x scripts/build-llama-static.sh
-          ./scripts/build-llama-static.sh
+          LLAMA_CPP_REF=b6550 ./scripts/build-llama-static.sh
           bin="$(swift build -c release --package-path AgentService --show-bin-path)"
           mkdir -p dist-static
           cp "$bin/AgentService" dist-static/
@@ -65,7 +65,7 @@ jobs:
       - name: Build LlamaCppCBinary.xcframework
         run: |
           chmod +x scripts/build-prebuilt-xcframework.sh
-          ./scripts/build-prebuilt-xcframework.sh
+          LLAMA_CPP_REF=b6550 ./scripts/build-prebuilt-xcframework.sh
           pushd Vendor >/dev/null
           tar -czf LlamaCppCBinary.xcframework.tar.gz LlamaCppCBinary.xcframework
           popd >/dev/null

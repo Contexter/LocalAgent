@@ -96,3 +96,12 @@ Prebuilt macOS arm64 binaries are published on tagged releases (`v*.*.*`).
   - `brew install llama.cpp` (ensures `libllama` is present at runtime)
   - Or build `llama.cpp` from source and make its `llama` library discoverable via `DYLD_LIBRARY_PATH` or install path
 - Legal: This repository uses MIT‑licensed code. Model weights and `llama.cpp` carry their own licences; ensure compliance if redistributing.
+
+- Static-linked variant: `AgentService-macos-arm64-static.tar.gz`
+  - Contains a binary statically linked against a pinned `llama.cpp` commit (default: `b6550`).
+  - CI explicitly builds with `LLAMA_CPP_REF=b6550` for reproducibility.
+  - To override locally, run builds with a different ref: `LLAMA_CPP_REF=<tag-or-commit> ./scripts/build-llama-static.sh`.
+
+- Prebuilt xcframework: `LlamaCppCBinary.xcframework.tar.gz`
+  - A SwiftPM-consumable binary target for the `LlamaCppC` shim + static `libllama`.
+  - CI builds with `LLAMA_CPP_REF=b6550`. Locally you can run `LLAMA_CPP_REF=<tag-or-commit> ./scripts/build-prebuilt-xcframework.sh`.
