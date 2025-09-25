@@ -31,9 +31,9 @@ cp -v llama.h "$HEADERS_DIR/"
 popd >/dev/null
 
 echo "==> Building wrapper static archive"
-clang -c -O3 -fPIC "$ROOT_DIR/Sources/LlamaCppC/wrap.c" -I"$HEADERS_DIR" -o "$WORK_DIR/wrap.o"
+clang -c -O3 -fPIC "$ROOT_DIR/AgentService/Sources/LlamaCppC/wrap.c" -I"$HEADERS_DIR" -o "$WORK_DIR/wrap.o"
 libtool -static -o "$LIB_DIR/libLlamaCppC.a" "$LIB_DIR/libllama.a" "$WORK_DIR/wrap.o"
-cp -v "$ROOT_DIR/Sources/LlamaCppC/shim.h" "$HEADERS_DIR/"
+cp -v "$ROOT_DIR/AgentService/Sources/LlamaCppC/shim.h" "$HEADERS_DIR/"
 
 echo "==> Creating xcframework"
 rm -rf "$OUT_DIR"
@@ -43,4 +43,3 @@ xcodebuild -create-xcframework \
   -output "$OUT_DIR"
 
 echo "Built $OUT_DIR"
-

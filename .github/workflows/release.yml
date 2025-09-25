@@ -17,24 +17,68 @@ jobs:
         with:
           xcode-version: latest
 
-      - name: Build AgentService (Release)
+      - name: Build AgentService (plain Release)
         run: |
           swift build -c release --package-path AgentService
           bin="$(swift build -c release --package-path AgentService --show-bin-path)"
           mkdir -p dist
           cp "$bin/AgentService" dist/
-          tar -czf AgentService-macos-arm64.tar.gz -C dist AgentService
+          tar -czf AgentService-macos-arm64-plain.tar.gz -C dist AgentService
 
-      - name: Upload artifact
+      - name: Build AgentService (static llama)
+        run: |
+          chmod +x scripts/build-llama-static.sh
+          ./scripts/build-llama-static.sh
+          bin="$(swift build -c release --package-path AgentService --show-bin-path)"
+          mkdir -p dist-static
+          cp "$bin/AgentService" dist-static/
+          tar -czf AgentService-macos-arm64-static.tar.gz -C dist-static AgentService
+
+      - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: AgentService-macos-arm64
-          path: AgentService-macos-arm64.tar.gz
+          path: |
+            AgentService-macos-arm64-plain.tar.gz
+            AgentService-macos-arm64-static.tar.gz
 
-      - name: Create GitHub Release
+      - name: Create GitHub Release (attach binaries)
         uses: softprops/action-gh-release@v2
         with:
-          files: AgentService-macos-arm64.tar.gz
+          files: |
+            AgentService-macos-arm64-plain.tar.gz
+            AgentService-macos-arm64-static.tar.gz
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+  build-xcframework:
+    runs-on: macos-14
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest
+
+      - name: Build LlamaCppCBinary.xcframework
+        run: |
+          chmod +x scripts/build-prebuilt-xcframework.sh
+          ./scripts/build-prebuilt-xcframework.sh
+          pushd Vendor >/dev/null
+          tar -czf LlamaCppCBinary.xcframework.tar.gz LlamaCppCBinary.xcframework
+          popd >/dev/null
+
+      - name: Upload xcframework artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: LlamaCppCBinary-xcframework
+          path: Vendor/LlamaCppCBinary.xcframework.tar.gz
+
+      - name: Attach xcframework to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: Vendor/LlamaCppCBinary.xcframework.tar.gz
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

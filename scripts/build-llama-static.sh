@@ -29,17 +29,18 @@ cp -v llama.h "$HEADERS_DIR/"
 popd >/dev/null
 
 echo "==> Building shim wrapper archive"
-clang -c -O3 -fPIC "$ROOT_DIR/Sources/LlamaCppC/wrap.c" -I"$HEADERS_DIR" -o "$WORK_DIR/wrap.o"
+clang -c -O3 -fPIC "$ROOT_DIR/AgentService/Sources/LlamaCppC/wrap.c" -I"$HEADERS_DIR" -o "$WORK_DIR/wrap.o"
 libtool -static -o "$LIB_DIR/libLlamaCppC.a" "$LIB_DIR/libllama.a" "$WORK_DIR/wrap.o"
-cp -v "$ROOT_DIR/Sources/LlamaCppC/shim.h" "$HEADERS_DIR/"
+cp -v "$ROOT_DIR/AgentService/Sources/LlamaCppC/shim.h" "$HEADERS_DIR/"
 
 echo "==> Linking AgentService with static libLlamaCppC.a"
 swift build -c release --package-path "$ROOT_DIR"/AgentService \
   -Xcc -I"$HEADERS_DIR" \
   -Xlinker -L"$LIB_DIR" \
   -Xlinker -lLlamaCppC \
+  -Xlinker -framework -Xlinker Metal \
+  -Xlinker -framework -Xlinker Accelerate \
   -Xlinker -dead_strip
 
 BIN_DIR=$(swift build -c release --package-path "$ROOT_DIR"/AgentService --show-bin-path)
 echo "Built AgentService at $BIN_DIR/AgentService"
-
