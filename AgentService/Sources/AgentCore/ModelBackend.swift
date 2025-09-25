@@ -4,6 +4,24 @@ public protocol ModelBackend {
     func generateResponse(for request: ChatRequest) async throws -> ChatResponse
 }
 
+public extension ModelBackend {
+    /// Default SSE generator: encodes the full ChatResponse as a single event and signals done.
+    func generateSSE(for request: ChatRequest) async throws -> (headers: [String: String], body: String) {
+        let resp = try await generateResponse(for: request)
+        let json = (try? String(data: JSONEncoder().encode(resp), encoding: .utf8)) ?? "{}"
+        let sse = [
+            "event: message\ndata: \(json)\n\n",
+            "event: done\ndata: {}\n\n"
+        ].joined()
+        let headers = [
+            "Content-Type": "text/event-stream; charset=utf-8",
+            "Cache-Control": "no-cache",
+            "X-Chunked-SSE": "1"
+        ]
+        return (headers, sse)
+    }
+}
+
 public struct MockBackend: ModelBackend {
     public init() {}
     public func generateResponse(for request: ChatRequest) async throws -> ChatResponse {
@@ -72,5 +90,37 @@ public struct MockBackend: ModelBackend {
             return "No explicit tool call detected. Provide arguments as JSON to trigger a function call, e.g. call \(tools[0].name) with { ... }."
         }
         return "Echo: \(lastUser)"
+    }
+
+    public func generateSSE(for request: ChatRequest) async throws -> (headers: [String : String], body: String) {
+        let resp = try await generateResponse(for: request)
+        var sse = ""
+        if let fc = resp.choices.first?.message.function_call {
+            // Stream function_call arguments progressively (JSON-encoded to avoid escaping issues)
+            func asJSON(_ obj: Any) -> String {
+                (try? String(data: JSONSerialization.data(withJSONObject: obj), encoding: .utf8)) ?? "{}"
+            }
+            var args = ""
+            sse += "event: message\ndata: \(asJSON(["function_call": ["name": fc.name, "arguments": args]]))\n\n"
+            for ch in fc.arguments {
+                args.append(ch)
+                sse += "event: message\ndata: \(asJSON(["function_call": ["name": fc.name, "arguments": args]]))\n\n"
+            }
+        } else if let text = resp.choices.first?.message.content {
+            // Stream words as deltas
+            func asJSON(_ obj: Any) -> String {
+                (try? String(data: JSONSerialization.data(withJSONObject: obj), encoding: .utf8)) ?? "{}"
+            }
+            for word in text.split(separator: " ") {
+                sse += "event: message\ndata: \(asJSON(["delta": String(word)]))\n\n"
+            }
+        }
+        sse += "event: done\ndata: {}\n\n"
+        let headers = [
+            "Content-Type": "text/event-stream; charset=utf-8",
+            "Cache-Control": "no-cache",
+            "X-Chunked-SSE": "1"
+        ]
+        return (headers, sse)
     }
 }

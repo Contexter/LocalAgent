@@ -59,21 +59,50 @@ public final class NIOHTTPServer: @unchecked Sendable {
                 Task {
                     let resp = try await self.kernel.handle(req)
                     context.eventLoop.execute {
-                        var responseHead = HTTPResponseHead(version: head.version, status: .init(statusCode: resp.status))
                         var headers = HTTPHeaders()
                         for (k, v) in resp.headers { headers.add(name: k, value: v) }
-                        if headers["Content-Length"].isEmpty {
+
+                        let isSSE = headers["Content-Type"].first?.lowercased().contains("text/event-stream") == true
+                        let chunkedSSE = isSSE && headers["X-Chunked-SSE"].first == "1"
+
+                        var responseHead = HTTPResponseHead(version: head.version, status: .init(statusCode: resp.status))
+                        if chunkedSSE {
+                            headers.remove(name: "Content-Length")
+                            headers.replaceOrAdd(name: "Transfer-Encoding", value: "chunked")
+                        } else if headers["Content-Length"].isEmpty {
                             headers.add(name: "Content-Length", value: String(resp.body.count))
                         }
                         responseHead.headers = headers
                         context.write(self.wrapOutboundOut(.head(responseHead)), promise: nil)
-                        let buffer = context.channel.allocator.buffer(bytes: resp.body)
-                        context.write(self.wrapOutboundOut(.body(.byteBuffer(buffer))), promise: nil)
-                        context.writeAndFlush(self.wrapOutboundOut(.end(nil)), promise: nil)
+
+                        if chunkedSSE {
+                            let text = String(data: resp.body, encoding: .utf8) ?? ""
+                            let parts = text.components(separatedBy: "\n\n").map { $0 + "\n\n" }.filter { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
+                            self.writeSSEChunks(parts, on: context, index: 0)
+                        } else {
+                            let buffer = context.channel.allocator.buffer(bytes: resp.body)
+                            context.write(self.wrapOutboundOut(.body(.byteBuffer(buffer))), promise: nil)
+                            context.writeAndFlush(self.wrapOutboundOut(.end(nil)), promise: nil)
+                        }
                     }
                 }
                 self.head = nil
                 self.body = nil
+            }
+        }
+
+        private func writeSSEChunks(_ chunks: [String], on context: ChannelHandlerContext, index: Int) {
+            if index >= chunks.count {
+                context.writeAndFlush(self.wrapOutboundOut(.end(nil)), promise: nil)
+                return
+            }
+            let data = Data(chunks[index].utf8)
+            let buf = context.channel.allocator.buffer(bytes: data)
+            context.write(self.wrapOutboundOut(.body(.byteBuffer(buf))), promise: nil)
+            context.flush()
+            context.eventLoop.scheduleTask(in: .milliseconds(40)) { [weak self] in
+                guard let self else { return }
+                self.writeSSEChunks(chunks, on: context, index: index + 1)
             }
         }
     }

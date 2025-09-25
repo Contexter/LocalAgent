@@ -9,7 +9,7 @@
 * **Hugging Face interoperability** – Easily download and manage models from Hugging Face.  Supports GGUF quantization for efficient inference via `llama.cpp`.  Model size can be reduced via Q4/Q5 quantization.
 * **Native Apple tooling and custom wrappers** – Offers multiple backends: compile `llama.cpp` yourself and wrap it in Swift for full control, use Core ML for hardware‑accelerated inference, or leverage MLX for GPU‑accelerated models.  You’re *not* tied to third‑party wrappers—this repository includes examples and guidance for building your own, with Kuzco or LocalLLMClient serving only as references if you need inspiration.
 * **Seamless FountainKit integration** – Provides configuration templates and persona definitions so your local agent can plug into the FountainKit gateway, planner and function‑caller services.
-* **Extensible service layer** – Built on Vapor/SwiftNIO, the chat service can be extended to support streaming responses, authentication, custom logging or additional endpoints.
+* **Extensible service layer** – Built on SwiftNIO, the chat service can be extended to support streaming responses, authentication, custom logging or additional endpoints.
 
 ## Prerequisites
 
@@ -33,6 +33,7 @@ The repository contains two main components:
 * Add `AgentService` to your project via Swift Package Manager.
 * Configure the service with the path to your GGUF or Core ML model in `agent-config.json`.  When using a GGUF model, the service links directly against your compiled `llama.cpp` library.  When using a Core ML model, it loads the `.mlmodel` via `MLModel(contentsOf:)`.
 * Run the service using `swift run AgentService` and verify that `http://localhost:8080/chat` returns responses.
+* Streaming is supported at `POST /chat/stream` (Server‑Sent Events).
 
 ### 2. `FountainKitIntegration`
 
@@ -85,3 +86,13 @@ Contributions are welcome!  If you find a bug or want to add support for another
 ## License
 
 This project is released under the MIT licence.  Third‑party models and libraries may have their own licences—please review them before use in production.
+
+## Binaries
+
+Prebuilt macOS arm64 binaries are published on tagged releases (`v*.*.*`).
+
+- Artifact: `AgentService-macos-arm64.tar.gz` (contains the `AgentService` executable)
+- Requirements when using llama backend:
+  - `brew install llama.cpp` (ensures `libllama` is present at runtime)
+  - Or build `llama.cpp` from source and make its `llama` library discoverable via `DYLD_LIBRARY_PATH` or install path
+- Legal: This repository uses MIT‑licensed code. Model weights and `llama.cpp` carry their own licences; ensure compliance if redistributing.

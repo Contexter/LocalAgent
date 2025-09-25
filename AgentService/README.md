@@ -28,6 +28,22 @@ implementing the `ModelBackend` protocol.
          }' | jq
    ```
 
+### Streaming (SSE)
+
+The service supports a simple Server-Sent Events stream for token-like deltas.
+
+```bash
+curl -N http://127.0.0.1:8080/chat/stream \
+  -H 'content-type: application/json' \
+  -d '{
+        "messages":[{"role":"user","content":"hello there friend"}]
+      }'
+```
+
+Headers used for streaming:
+- `Content-Type: text/event-stream`
+- `X-Chunked-SSE: 1` (the server writes SSE chunks progressively)
+
 You should see a `function_call` response.
 
 ## Integrating a real backend
